@@ -66,4 +66,13 @@ async function logout(req, res, next) {
   }
 }
 
-module.exports = { register, login, refresh, logout };
+async function me(req, res, next) {
+  try {
+    if (!req.user) return res.status(401).json({ status: 'error', message: 'Not authenticated' });
+    return res.json(new ApiResponse({ data: { user: req.user } }));
+  } catch (err) {
+    return next(err);
+  }
+}
+
+module.exports = { register, login, refresh, logout, me };

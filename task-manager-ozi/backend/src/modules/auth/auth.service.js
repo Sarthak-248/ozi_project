@@ -5,9 +5,16 @@ const User = require('../user/user.model');
 const { jwt: jwtConfig } = require('../../config/env');
 
 const createTokens = (userId) => {
-  const access = jwt.sign({ sub: userId }, jwtConfig.accessSecret, { expiresIn: jwtConfig.accessExpiry });
-  const refresh = jwt.sign({ sub: userId }, jwtConfig.refreshSecret, { expiresIn: jwtConfig.refreshExpiry });
-  return { access, refresh };
+  if (!jwtConfig.accessSecret || !jwtConfig.refreshSecret) {
+    throw new ApiError(500, 'JWT secrets are not configured on the server')
+  }
+  try {
+    const access = jwt.sign({ sub: userId }, jwtConfig.accessSecret, { expiresIn: jwtConfig.accessExpiry });
+    const refresh = jwt.sign({ sub: userId }, jwtConfig.refreshSecret, { expiresIn: jwtConfig.refreshExpiry });
+    return { access, refresh };
+  } catch (err) {
+    throw new ApiError(500, 'Failed to generate JWT tokens')
+  }
 };
 
 async function register(payload) {
